@@ -50,8 +50,8 @@ public class AirplaneController : MonoBehaviour
         rb.AddForce(transform.right * maxThrust * throttle);
         rb.AddTorque(transform.up * yaw * responseModifier);
         rb.AddTorque(transform.right * pitch * responseModifier);
-        rb.AddTorque(transform.forward * roll * responseModifier);
+        rb.AddTorque(-transform.forward * roll * responseModifier);
 
-        rb.AddForce(transform.up * rb.velocity.magnitude * lift);
+        rb.AddForce(Vector3.up * rb.velocity.magnitude * lift);
     }
 }
