@@ -47,7 +47,7 @@ public static class Noise
 
                 if (noiseHeight > maxNoise) maxNoise = noiseHeight;
                 else if (noiseHeight < minNoise) minNoise = noiseHeight;
-                noiseMap[x, y] = Mathf.InverseLerp(-1.1f, 1f, noiseHeight);
+                noiseMap[x, y] = Mathf.InverseLerp(-1.1f, 1.3f, noiseHeight);
             }
         }
 

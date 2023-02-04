@@ -10,7 +10,8 @@ public class EndlessTerrain : MonoBehaviour
     private const float MaxViewDist = 450;
     public Transform viewer;
     private static MapGenerator _mapGen;
-    public float _offsetMult;
+    private float _offsetMult;
+    public Material terrainMat;
 
     private static Vector2 _viewerPosition;
     private int _chunkSize;
@@ -91,11 +92,14 @@ public class EndlessTerrain : MonoBehaviour
                 var t = TextureGenerator.TextureFromColourMap(md.colorMap, _mapGen.mapChunkSize, _mapGen.mapChunkSize);
                 var m = MeshGenerator.GenerateTerrainMesh(md.heightMap,
                     _mapGen.meshHeightMultiplier, _mapGen.meshHeightCurve, _mapGen.levelOfDetail).CreateMesh();
+                var r = p.GetComponent<Renderer>();
+                r.material = et.terrainMat;
                 p.GetComponent<MeshFilter>().mesh = m;
                 p.GetComponent<MeshCollider>().sharedMesh = m;
-                p.GetComponent<MeshRenderer>().material.mainTexture = t;
+               r.material.mainTexture = t;
             }
 
+            p.tag = "Terrain";
             _meshObject = p;
             _meshObject.transform.position = pos3;
             _meshObject.transform.localScale = (Vector3.one);
