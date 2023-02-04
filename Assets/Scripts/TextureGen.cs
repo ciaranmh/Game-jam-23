@@ -4,6 +4,7 @@ public static class TextureGenerator
 {
     public static Texture2D TextureFromColourMap(Color[] colorMap, int width, int height)
     {
+        Debug.Log($"Width = {width}, cMap = {colorMap}");
         var tex = new Texture2D(width, height)
         {
             filterMode = FilterMode.Point,

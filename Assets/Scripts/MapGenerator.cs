@@ -57,13 +57,15 @@ public class MapGenerator : MonoBehaviour
         if (Input.GetKey(KeyCode.UpArrow)) offset.y -= 1;
     }
 
-    public MapData GenerateMapData()
+    public MapData GenerateMapData() => GenerateMapData(offset);
+    
+    public MapData GenerateMapData(Vector2 offsetVal)
     {
         if (useRandomSeed)
             seed = Time.renderedFrameCount;
 
         var noiseMap =
-            Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistence, lacunarity, offset);
+            Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistence, lacunarity, offsetVal);
 
         var colorMap = new Color[mapChunkSize * mapChunkSize];
         for (var y = 0; y < mapChunkSize; y++)

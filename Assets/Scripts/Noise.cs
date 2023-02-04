@@ -9,11 +9,13 @@ public static class Noise
         var noiseMap = new float[mapWidth, mapHeight];
         
         var octaveOffsets = new Vector2[octaves];
-        Random.InitState(seed);
+
+        var rand = new System.Random(seed);
+        
         for (var i = 0; i < octaves; i++)
         {
-            var offsetX = Random.Range(-100000, 100000) + offset.x;
-            var offsetY = Random.Range(-100000, 100000) + offset.y;
+            var offsetX = rand.Next(-100000, 100000) + offset.x;
+            var offsetY = rand.Next(-100000, 100000) + offset.y;
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
         }
 

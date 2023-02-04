@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 using Object = UnityEngine.Object;
@@ -8,7 +10,7 @@ using Object = UnityEngine.Object;
 public class EndlessTerrain : MonoBehaviour
 {
     private const float MaxViewDist = 450;
-    public Transform viewer;
+    private Transform viewer;
     private static MapGenerator _mapGen;
     private float _offsetMult;
     public Material terrainMat;
@@ -16,9 +18,13 @@ public class EndlessTerrain : MonoBehaviour
     private static Vector2 _viewerPosition;
     private int _chunkSize;
     private int _chunksVisibleInViewDist;
+    private const int MaxConcurrentGenerations = 2;
 
     private readonly Dictionary<Vector2, TerrainChunk> _terrChunkDict = new();
     private readonly List<TerrainChunk> _visibleChunksLastUpdate = new();
+    private readonly Dictionary<Vector2, (MapData md, MeshData m)> _chunkCompleted = new();
+    private readonly Dictionary<Vector2, (MapData md, Mesh m)> _chunkBaked = new();
+    private readonly HashSet<Vector2> _awaitingGeneration = new();
 
     private void Start()
     {
@@ -26,6 +32,7 @@ public class EndlessTerrain : MonoBehaviour
         _chunkSize = _mapGen.mapChunkSize - 1;
         _chunksVisibleInViewDist = Mathf.RoundToInt(MaxViewDist / _chunkSize);
         _offsetMult = 1 / _mapGen.noiseScale;
+        viewer = GameObject.FindWithTag("Player").transform;
     }
 
     private void Update()
@@ -37,6 +44,16 @@ public class EndlessTerrain : MonoBehaviour
 
     private void UpdateVisibleChunks()
     {
+        foreach (var preChunk in _chunkCompleted.ToList())
+        {
+            Debug.Log(preChunk.Value.md.colorMap);
+            _terrChunkDict[preChunk.Key] =
+                new TerrainChunk(preChunk.Key, _chunkSize, transform,
+                    TextureGenerator.TextureFromColourMap(preChunk.Value.md.colorMap, _mapGen.mapChunkSize, _mapGen.mapChunkSize),
+                    preChunk.Value.m.CreateMesh());
+                    _chunkCompleted.Remove(preChunk.Key);
+        }
+
         foreach (var chunk in _visibleChunksLastUpdate)
         {
             chunk.SetVisible(false);
@@ -61,8 +78,31 @@ public class EndlessTerrain : MonoBehaviour
                         _visibleChunksLastUpdate.Add(_terrChunkDict[viewedChunkCoord]);
                     }
                 }
-                else
-                    _terrChunkDict[viewedChunkCoord] = new TerrainChunk(viewedChunkCoord, _chunkSize, transform);
+                else if (!_awaitingGeneration.Contains(viewedChunkCoord) &&
+                         _awaitingGeneration.Count < MaxConcurrentGenerations &&
+                         !_chunkCompleted.ContainsKey(viewedChunkCoord))
+                {
+                    _awaitingGeneration.Add(viewedChunkCoord);
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            var md = _mapGen.GenerateMapData(
+                                new Vector2(viewedChunkCoord.x * _chunkSize * _offsetMult,
+                                    -viewedChunkCoord.y * _chunkSize * _offsetMult));
+                            Debug.Log(md.colorMap);
+                            _chunkCompleted[viewedChunkCoord] = (md,
+                                MeshGenerator.GenerateTerrainMesh(md.heightMap, _mapGen.meshHeightMultiplier,
+                                    _mapGen.meshHeightCurve, _mapGen.levelOfDetail));
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError(e.StackTrace);
+                        }
+
+                        _awaitingGeneration.Remove(viewedChunkCoord);
+                    }).ConfigureAwait(false);
+                }
             }
         }
     }
@@ -73,7 +113,7 @@ public class EndlessTerrain : MonoBehaviour
         private readonly Vector2 _pos;
         private Bounds _bounds;
 
-        public TerrainChunk(Vector2 coord, int size, Transform parent)
+        public TerrainChunk(Vector2 coord, int size, Transform parent, MapData md)
         {
             var et = GameObject.FindWithTag("MapGen").GetComponent<EndlessTerrain>();
 
@@ -83,21 +123,42 @@ public class EndlessTerrain : MonoBehaviour
 
             var p = GameObject.CreatePrimitive(PrimitiveType.Plane);
             p.name = coord.ToString();
-            _mapGen.offset = _pos * et._offsetMult;
-            _mapGen.offset = new Vector2(_mapGen.offset.x, -_mapGen.offset.y);
 
-            if (_mapGen.drawMode == MapGenerator.DrawMode.Mesh)
-            {
-                var md = _mapGen.GenerateMapData();
-                var t = TextureGenerator.TextureFromColourMap(md.colorMap, _mapGen.mapChunkSize, _mapGen.mapChunkSize);
-                var m = MeshGenerator.GenerateTerrainMesh(md.heightMap,
-                    _mapGen.meshHeightMultiplier, _mapGen.meshHeightCurve, _mapGen.levelOfDetail).CreateMesh();
-                var r = p.GetComponent<Renderer>();
-                r.material = et.terrainMat;
-                p.GetComponent<MeshFilter>().mesh = m;
-                p.GetComponent<MeshCollider>().sharedMesh = m;
-               r.material.mainTexture = t;
-            }
+            var t = TextureGenerator.TextureFromColourMap(md.colorMap, _mapGen.mapChunkSize, _mapGen.mapChunkSize);
+            var m = MeshGenerator.GenerateTerrainMesh(md.heightMap,
+                _mapGen.meshHeightMultiplier, _mapGen.meshHeightCurve, _mapGen.levelOfDetail).CreateMesh();
+            var r = p.GetComponent<Renderer>();
+            r.material = et.terrainMat;
+            p.GetComponent<MeshFilter>().mesh = m;
+            p.GetComponent<MeshCollider>().sharedMesh = m;
+            r.material.mainTexture = t;
+
+
+            p.tag = "Terrain";
+            _meshObject = p;
+            _meshObject.transform.position = pos3;
+            _meshObject.transform.localScale = (Vector3.one);
+            _meshObject.transform.parent = parent;
+            SetVisible(false);
+        }
+
+        public TerrainChunk(Vector2 coord, int size, Transform parent, Texture t, Mesh m)
+        {
+            var et = GameObject.FindWithTag("MapGen").GetComponent<EndlessTerrain>();
+
+            _pos = coord * size;
+            _bounds = new Bounds(_pos, Vector2.one * size);
+            var pos3 = new Vector3(_pos.x, 0, _pos.y);
+
+            var p = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            p.name = coord.ToString();
+
+            var r = p.GetComponent<Renderer>();
+            r.material = et.terrainMat;
+            p.GetComponent<MeshFilter>().mesh = m;
+            p.GetComponent<MeshCollider>().sharedMesh = m;
+            r.material.mainTexture = t;
+
 
             p.tag = "Terrain";
             _meshObject = p;

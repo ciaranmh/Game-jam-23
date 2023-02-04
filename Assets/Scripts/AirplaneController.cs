@@ -9,6 +9,7 @@ public class AirplaneController : MonoBehaviour
     public float maxThrust = 200f;
     public float responsiveness = 5f;
     public double fuel = 100;
+    public GameObject acornPrefab;
 
     public float lift = 135f;
     private float throttle;
@@ -36,9 +37,12 @@ public class AirplaneController : MonoBehaviour
         pitch = Input.GetAxis("Pitch");
         yaw = Input.GetAxis("Yaw");
 
-        if (Input.GetKey(KeyCode.Space)) throttle += throttleIncrement;
+        if (Input.GetKey(KeyCode.LeftShift)) throttle += throttleIncrement;
         else if (Input.GetKey(KeyCode.LeftControl)) throttle -= throttleIncrement;
         throttle = Mathf.Clamp(throttle, 0f, 100f);
+
+        if (Input.GetKey(KeyCode.Space))
+            Instantiate(acornPrefab, transform.position + Vector3.down * 2, Quaternion.identity);
 
     }
 

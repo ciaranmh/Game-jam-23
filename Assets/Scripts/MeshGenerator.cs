@@ -7,6 +7,7 @@ public static class MeshGenerator
 {
     public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMult, AnimationCurve heightCurve, int levelOfDetail)
     {
+        heightCurve = new AnimationCurve(heightCurve.keys);
         var width = heightMap.GetLength(0);
         var height = heightMap.GetLength(1);
         var topLeftX = (width - 1) / -2f;
@@ -65,10 +66,12 @@ public class MeshData
 
     public Mesh CreateMesh()
     {
-        var mesh = new Mesh();
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.uv = uvs;
+        var mesh = new Mesh
+        {
+            vertices = vertices,
+            triangles = triangles,
+            uv = uvs
+        };
         mesh.RecalculateNormals();
         return mesh;
     }
