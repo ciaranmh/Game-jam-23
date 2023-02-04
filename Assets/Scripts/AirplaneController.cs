@@ -8,6 +8,7 @@ public class AirplaneController : MonoBehaviour
     public float throttleIncrement = 0.1f;
     public float maxThrust = 200f;
     public float responsiveness = 5f;
+    public double fuel = 100;
 
     public float lift = 135f;
     private float throttle;
@@ -53,5 +54,10 @@ public class AirplaneController : MonoBehaviour
         rb.AddTorque(-transform.forward * roll * responseModifier);
 
         rb.AddForce(Vector3.up * rb.velocity.magnitude * lift);
+        updateFuel();
+    }
+
+    private void updateFuel(){
+        fuel = fuel - (throttle/maxThrust)*0.1; 
     }
 }

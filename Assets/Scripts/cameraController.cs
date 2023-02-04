@@ -10,6 +10,8 @@ public class cameraController : MonoBehaviour
     private int index = 1;
     private Vector3 target;
 
+    public Transform plane;
+
     private void Update(){
 
         if (Input.GetKeyDown(KeyCode.Alpha1)) index = 0;
@@ -24,7 +26,8 @@ public class cameraController : MonoBehaviour
     private void FixedUpdate(){
 
         transform.position = Vector3.MoveTowards(transform.position, target, Time.deltaTime * speed);
-        transform.forward = povs[index].forward;
+        transform.LookAt(plane);
+        //transform.forward = povs[index].forward;
 
     }
 }  
