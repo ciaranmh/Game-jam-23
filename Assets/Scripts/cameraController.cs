@@ -13,9 +13,9 @@ public class cameraController : MonoBehaviour
     private void Update(){
 
         if (Input.GetKeyDown(KeyCode.Alpha1)) index = 0;
-        else if (Input.GetKeyDown(KeyCode.Alpha1)) index = 1;
-        else if (Input.GetKeyDown(KeyCode.Alpha1)) index = 2;
-        else if (Input.GetKeyDown(KeyCode.Alpha1)) index = 3;
+        else if (Input.GetKeyDown(KeyCode.Alpha2)) index = 1;
+        else if (Input.GetKeyDown(KeyCode.Alpha3)) index = 2;
+        else if (Input.GetKeyDown(KeyCode.Alpha4)) index = 3;
 
         target = povs[index].position;
 
@@ -27,4 +27,4 @@ public class cameraController : MonoBehaviour
         transform.forward = povs[index].forward;
 
     }
-}
+}  
