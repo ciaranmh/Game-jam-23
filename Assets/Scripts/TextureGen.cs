@@ -4,9 +4,11 @@ public static class TextureGenerator
 {
     public static Texture2D TextureFromColourMap(Color[] colorMap, int width, int height)
     {
-        var tex = new Texture2D(width,height);
-        tex.filterMode = FilterMode.Point;
-        tex.wrapMode = TextureWrapMode.Clamp;
+        var tex = new Texture2D(width,height)
+        {
+            filterMode = FilterMode.Point,
+            wrapMode = TextureWrapMode.Clamp
+        };
         tex.SetPixels(colorMap);
         tex.Apply();
         return tex;

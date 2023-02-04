@@ -18,4 +18,6 @@ namespace Editor
                 mapGen.DrawMapInEditor();
         }
     }
+    
+    
 }
