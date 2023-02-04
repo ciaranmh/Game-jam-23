@@ -199,6 +199,7 @@ MonoBehaviour:
   - {fileID: 29246039}
   - {fileID: 29721703}
   speed: 100
+  plane: {fileID: 0}
 --- !u!1 &951877119
 GameObject:
   m_ObjectHideFlags: 0
@@ -372,6 +373,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: biplane Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 94752ecaf348a44f58849c0dbb76fed3,
+        type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 94752ecaf348a44f58849c0dbb76fed3, type: 3}

@@ -8,7 +8,10 @@ public class AirplaneController : MonoBehaviour
     public float throttleIncrement = 0.1f;
     public float maxThrust = 200f;
     public float responsiveness = 5f;
-    public double fuel = 100;
+    public double CurrentFuel;
+    public double MaxFuel = 100;
+
+    public HealthBar hb;
 
     public float lift = 135f;
     private float throttle;
@@ -29,6 +32,7 @@ public class AirplaneController : MonoBehaviour
 
     private void Start(){
         rb = GetComponent<Rigidbody>();
+        CurrentFuel = MaxFuel;
     }
 
     private void HandleInputs(){
@@ -45,6 +49,8 @@ public class AirplaneController : MonoBehaviour
     private void Update(){
         HandleInputs();
         propella.Rotate(Vector3.right*throttle);
+        hb.setFuel(CurrentFuel);
+        hb.setMax(MaxFuel);
     }
 
     private void FixedUpdate(){
@@ -58,6 +64,6 @@ public class AirplaneController : MonoBehaviour
     }
 
     private void updateFuel(){
-        fuel = fuel - (throttle/maxThrust)*0.1; 
+        CurrentFuel = CurrentFuel - (throttle/maxThrust)*0.1; 
     }
 }
