@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - MapGen
+  - Terrain
   layers:
   - Default
   - TransparentFX
