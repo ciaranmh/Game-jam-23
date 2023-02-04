@@ -22,14 +22,15 @@ public class EndlessTerrain : MonoBehaviour
     private void Start()
     {
         _mapGen = GetComponent<MapGenerator>();
-        _chunkSize = MapGenerator.MapChunkSize - 1;
+        _chunkSize = _mapGen.mapChunkSize - 1;
         _chunksVisibleInViewDist = Mathf.RoundToInt(MaxViewDist / _chunkSize);
     }
 
     private void Update()
     {
         _viewerPosition = new Vector2(viewer.position.x, viewer.position.z);
-        UpdateVisibleChunks();
+        // UpdateVisibleChunks();
+        UpdateVisibleChunksSpecial();
     }
 
     private void UpdateVisibleChunks()
@@ -38,6 +39,7 @@ public class EndlessTerrain : MonoBehaviour
         {
             chunk.SetVisible(false);
         }
+
         _visibleChunksLastUpdate.Clear();
 
         var currentChunkX = Mathf.RoundToInt(_viewerPosition.x / _chunkSize);
@@ -48,38 +50,28 @@ public class EndlessTerrain : MonoBehaviour
             for (var xOffset = -_chunksVisibleInViewDist; xOffset <= _chunksVisibleInViewDist; xOffset++)
             {
                 var viewedChunkCoord = new Vector2(currentChunkX + xOffset, currentChunkY + yOffset);
-                
-                // if (_terrChunkDict.ContainsKey(viewedChunkCoord))
-                // {
-                //     _terrChunkDict[viewedChunkCoord].UpdateTerrainChunk();
-                //     if (_terrChunkDict[viewedChunkCoord].IsVisible())
-                //     {
-                //         _visibleChunksLastUpdate.Add(_terrChunkDict[viewedChunkCoord]);
-                //     }
-                // }
-                // else
-                //      _terrChunkDict[viewedChunkCoord] = new TerrainChunk(viewedChunkCoord, _chunkSize, transform);
+
                 if (_terrChunkDict.ContainsKey(viewedChunkCoord))
                 {
-                    Destroy(_terrChunkDict[viewedChunkCoord]._meshObject);
-                    _terrChunkDict[viewedChunkCoord] = new TerrainChunk(viewedChunkCoord, _chunkSize, transform);
-                    _terrChunkDict[viewedChunkCoord].SetVisible(true);
+                    _terrChunkDict[viewedChunkCoord].UpdateTerrainChunk();
+                    if (_terrChunkDict[viewedChunkCoord].IsVisible())
+                    {
+                        _visibleChunksLastUpdate.Add(_terrChunkDict[viewedChunkCoord]);
+                    }
                 }
                 else
-                {
                     _terrChunkDict[viewedChunkCoord] = new TerrainChunk(viewedChunkCoord, _chunkSize, transform);
-                    _terrChunkDict[viewedChunkCoord].SetVisible(true);
-                }
             }
         }
     }
-    
-    private void DrawMapInEditor()
+
+    private void UpdateVisibleChunksSpecial()
     {
         foreach (var chunk in _visibleChunksLastUpdate)
         {
             chunk.SetVisible(false);
         }
+
         _visibleChunksLastUpdate.Clear();
 
         var currentChunkX = Mathf.RoundToInt(_viewerPosition.x / _chunkSize);
@@ -90,17 +82,7 @@ public class EndlessTerrain : MonoBehaviour
             for (var xOffset = -_chunksVisibleInViewDist; xOffset <= _chunksVisibleInViewDist; xOffset++)
             {
                 var viewedChunkCoord = new Vector2(currentChunkX + xOffset, currentChunkY + yOffset);
-                
-                // if (_terrChunkDict.ContainsKey(viewedChunkCoord))
-                // {
-                //     _terrChunkDict[viewedChunkCoord].UpdateTerrainChunk();
-                //     if (_terrChunkDict[viewedChunkCoord].IsVisible())
-                //     {
-                //         _visibleChunksLastUpdate.Add(_terrChunkDict[viewedChunkCoord]);
-                //     }
-                // }
-                // else
-                //      _terrChunkDict[viewedChunkCoord] = new TerrainChunk(viewedChunkCoord, _chunkSize, transform);
+
                 if (_terrChunkDict.ContainsKey(viewedChunkCoord))
                 {
                     Destroy(_terrChunkDict[viewedChunkCoord]._meshObject);
@@ -124,22 +106,26 @@ public class EndlessTerrain : MonoBehaviour
 
         public TerrainChunk(Vector2 coord, int size, Transform parent)
         {
+            var et = GameObject.FindWithTag("MapGen").GetComponent<EndlessTerrain>();
+            
             _pos = coord * size;
-            _bounds = new Bounds(_pos, Vector2.one*size);
+            _bounds = new Bounds(_pos, Vector2.one * size);
             var pos3 = new Vector3(_pos.x, 0, _pos.y);
-            
+
             var p = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            _mapGen.offset = _pos * GameObject.FindWithTag("MapGen").GetComponent<EndlessTerrain>().offsetMult;
-            
-            var md = _mapGen.GenerateMapData();
-            var meshData = MeshGenerator.GenerateTerrainMesh(md.heightMap, _mapGen.meshHeightMultiplier, _mapGen.meshHeightCurve, _mapGen.levelOfDetail);
-            var tData = TextureGenerator.TextureFromColourMap(md.colorMap, MapGenerator.MapChunkSize, MapGenerator.MapChunkSize);
-            p.GetComponent<MeshFilter>().mesh = meshData.CreateMesh();
-            p.GetComponent<MeshRenderer>().material.mainTexture = tData;
-        
+            _mapGen.offset = _pos * et.offsetMult;
+
+            if (_mapGen.drawMode == MapGenerator.DrawMode.Mesh){
+                var md = _mapGen.GenerateMapData();
+                p.GetComponent<MeshFilter>().mesh = MeshGenerator.GenerateTerrainMesh(md.heightMap,
+                    _mapGen.meshHeightMultiplier, _mapGen.meshHeightCurve, _mapGen.levelOfDetail).CreateMesh();
+                p.GetComponent<MeshRenderer>().material.mainTexture =
+                    TextureGenerator.TextureFromColourMap(md.colorMap, _mapGen.mapChunkSize, _mapGen.mapChunkSize);
+            }
+
             _meshObject = p;
             _meshObject.transform.position = pos3;
-            _meshObject.transform.localScale = Vector3.one;
+            _meshObject.transform.localScale = (Vector3.one);
             _meshObject.transform.parent = parent;
             SetVisible(false);
         }

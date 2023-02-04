@@ -14,7 +14,7 @@ public class MapGenerator : MonoBehaviour
 
     public DrawMode drawMode;
 
-    public const int MapChunkSize = 241;
+    public int mapChunkSize = 241;
 
     [Range(0,6)]
     public int levelOfDetail;
@@ -63,18 +63,18 @@ public class MapGenerator : MonoBehaviour
             seed = Time.renderedFrameCount;
 
         var noiseMap =
-            Noise.GenerateNoiseMap(MapChunkSize, MapChunkSize, seed, noiseScale, octaves, persistence, lacunarity, offset);
+            Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistence, lacunarity, offset);
 
-        var colorMap = new Color[MapChunkSize * MapChunkSize];
-        for (var y = 0; y < MapChunkSize; y++)
+        var colorMap = new Color[mapChunkSize * mapChunkSize];
+        for (var y = 0; y < mapChunkSize; y++)
         {
-            for (var x = 0; x < MapChunkSize; x++)
+            for (var x = 0; x < mapChunkSize; x++)
             {
                 var curMapHeight = noiseMap[x, y];
                 foreach (var region in regions)
                 {
                     if (!(curMapHeight <= region.height)) continue;
-                    colorMap[y * MapChunkSize + x] = region.colour;
+                    colorMap[y * mapChunkSize + x] = region.colour;
                     break;
                 }
             }
@@ -94,12 +94,12 @@ public class MapGenerator : MonoBehaviour
                 display.DrawTexture(TextureGenerator.TextureFromHeightMap(mapData.heightMap));
                 break;
             case DrawMode.ColorMap:
-                display.DrawTexture(TextureGenerator.TextureFromColourMap(mapData.colorMap, MapChunkSize, MapChunkSize));
+                display.DrawTexture(TextureGenerator.TextureFromColourMap(mapData.colorMap, mapChunkSize, mapChunkSize));
                 break;
             case DrawMode.Mesh:
                 display.DrawMesh(
                     MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, levelOfDetail),
-                    TextureGenerator.TextureFromColourMap(mapData.colorMap, MapChunkSize, MapChunkSize));
+                    TextureGenerator.TextureFromColourMap(mapData.colorMap, mapChunkSize, mapChunkSize));
                 break;
         }
     }
@@ -107,12 +107,12 @@ public class MapGenerator : MonoBehaviour
     private void OnDrawGizmos()
     {
         if (_map == null || !drawGizmos) return;
-        for (var x = 0; x < MapChunkSize; x++)
+        for (var x = 0; x < mapChunkSize; x++)
         {
-            for (var y = 0; y < MapChunkSize; y++)
+            for (var y = 0; y < mapChunkSize; y++)
             {
                 Gizmos.color = (_map[x, y] == 1) ? Color.black : Color.white;
-                var pos = new Vector3(-MapChunkSize / 2 + x + .5f, -MapChunkSize / 2 + y + .5f, 0);
+                var pos = new Vector3(-mapChunkSize / 2 + x + .5f, -mapChunkSize / 2 + y + .5f, 0);
                 Gizmos.DrawCube(pos, Vector3.one);
             }
         }

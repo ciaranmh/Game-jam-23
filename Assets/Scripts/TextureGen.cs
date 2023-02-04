@@ -4,7 +4,7 @@ public static class TextureGenerator
 {
     public static Texture2D TextureFromColourMap(Color[] colorMap, int width, int height)
     {
-        var tex = new Texture2D(width,height)
+        var tex = new Texture2D(width, height)
         {
             filterMode = FilterMode.Point,
             wrapMode = TextureWrapMode.Clamp
@@ -28,6 +28,6 @@ public static class TextureGenerator
             }
         }
 
-        return TextureFromColourMap(colorMap,width,height);
+        return TextureFromColourMap(colorMap, width, height);
     }
 }
