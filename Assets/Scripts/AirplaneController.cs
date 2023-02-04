@@ -17,6 +17,8 @@ public class AirplaneController : MonoBehaviour
     
     Rigidbody rb; 
 
+    public Transform propella;
+
     private float responseModifier{
         get {
             return (rb.mass / 10f)*responsiveness;
@@ -41,10 +43,11 @@ public class AirplaneController : MonoBehaviour
 
     private void Update(){
         HandleInputs();
+        propella.Rotate(Vector3.right*throttle);
     }
 
     private void FixedUpdate(){
-        rb.AddForce(-transform.right * maxThrust * throttle);
+        rb.AddForce(transform.right * maxThrust * throttle);
         rb.AddTorque(transform.up * yaw * responseModifier);
         rb.AddTorque(transform.right * pitch * responseModifier);
         rb.AddTorque(transform.forward * roll * responseModifier);
