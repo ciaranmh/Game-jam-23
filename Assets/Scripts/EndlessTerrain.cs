@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,8 +23,7 @@ public class EndlessTerrain : MonoBehaviour
 
     private readonly Dictionary<Vector2, TerrainChunk> _terrChunkDict = new();
     private readonly List<TerrainChunk> _visibleChunksLastUpdate = new();
-    private readonly Dictionary<Vector2, (MapData md, MeshData m)> _chunkCompleted = new();
-    private readonly Dictionary<Vector2, (MapData md, Mesh m)> _chunkBaked = new();
+    private readonly ConcurrentDictionary<Vector2, (MapData md, MeshData m)> _chunkCompleted = new();
     private readonly HashSet<Vector2> _awaitingGeneration = new();
 
     private void Start()
@@ -49,9 +49,10 @@ public class EndlessTerrain : MonoBehaviour
             Debug.Log(preChunk.Value.md.colorMap);
             _terrChunkDict[preChunk.Key] =
                 new TerrainChunk(preChunk.Key, _chunkSize, transform,
-                    TextureGenerator.TextureFromColourMap(preChunk.Value.md.colorMap, _mapGen.mapChunkSize, _mapGen.mapChunkSize),
+                    TextureGenerator.TextureFromColourMap(preChunk.Value.md.colorMap, _mapGen.mapChunkSize,
+                        _mapGen.mapChunkSize),
                     preChunk.Value.m.CreateMesh());
-                    _chunkCompleted.Remove(preChunk.Key);
+            _chunkCompleted.Remove(preChunk.Key, out var _);
         }
 
         foreach (var chunk in _visibleChunksLastUpdate)
