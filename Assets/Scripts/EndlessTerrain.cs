@@ -10,7 +10,8 @@ public class EndlessTerrain : MonoBehaviour
     private const float MaxViewDist = 450;
     public Transform viewer;
     private static MapGenerator _mapGen;
-    public float offsetMult;
+    public float _offsetMult;
+    private float lasfOffsetMult;
 
     private static Vector2 _viewerPosition;
     private int _chunkSize;
@@ -23,7 +24,8 @@ public class EndlessTerrain : MonoBehaviour
     {
         _mapGen = GetComponent<MapGenerator>();
         _chunkSize = _mapGen.mapChunkSize - 1;
-        _chunksVisibleInViewDist = Mathf.RoundToInt(MaxViewDist / _chunkSize);
+        _chunksVisibleInViewDist = 2; //Mathf.RoundToInt(MaxViewDist / _chunkSize);
+        // _offsetMult = 1 / _mapGen.noiseScale;
     }
 
     private void Update()
@@ -67,12 +69,9 @@ public class EndlessTerrain : MonoBehaviour
 
     private void UpdateVisibleChunksSpecial()
     {
-        foreach (var chunk in _visibleChunksLastUpdate)
-        {
-            chunk.SetVisible(false);
-        }
+        if (_offsetMult == lasfOffsetMult) return;
 
-        _visibleChunksLastUpdate.Clear();
+        lasfOffsetMult = _offsetMult;
 
         var currentChunkX = Mathf.RoundToInt(_viewerPosition.x / _chunkSize);
         var currentChunkY = Mathf.RoundToInt(_viewerPosition.y / _chunkSize);
@@ -113,7 +112,7 @@ public class EndlessTerrain : MonoBehaviour
             var pos3 = new Vector3(_pos.x, 0, _pos.y);
 
             var p = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            _mapGen.offset = _pos * et.offsetMult;
+            _mapGen.offset = _pos * et._offsetMult;
 
             if (_mapGen.drawMode == MapGenerator.DrawMode.Mesh){
                 var md = _mapGen.GenerateMapData();
