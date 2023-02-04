@@ -7,13 +7,13 @@ public static class Noise
         float lacunarity, Vector2 offset)
     {
         var noiseMap = new float[mapWidth, mapHeight];
-
-        var rand = new System.Random(seed);
+        
         var octaveOffsets = new Vector2[octaves];
+        Random.InitState(seed);
         for (var i = 0; i < octaves; i++)
         {
-            var offsetX = rand.Next(-100000, 100000) + offset.x;
-            var offsetY = rand.Next(-100000, 100000) + offset.y;
+            var offsetX = Random.Range(-100000, 100000) + offset.x;
+            var offsetY = Random.Range(-100000, 100000) + offset.y;
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
         }
 
@@ -47,20 +47,9 @@ public static class Noise
 
                 if (noiseHeight > maxNoise) maxNoise = noiseHeight;
                 else if (noiseHeight < minNoise) minNoise = noiseHeight;
-                noiseMap[x, y] = noiseHeight;
+                noiseMap[x, y] = Mathf.InverseLerp(-1.1f, 1f, noiseHeight);
             }
         }
-
-        for (var y = 0; y < mapHeight; y++)
-        {
-            for (var x = 0; x < mapWidth; x++)
-            {
-                noiseMap[x, y] = Mathf.InverseLerp(-1.1f, 1f, noiseMap[x, y]);
-            }
-        }
-
-        Debug.Log($"Max noise: {maxNoise}");
-        Debug.Log($"Max noise: {minNoise}");
 
         return noiseMap;
     }

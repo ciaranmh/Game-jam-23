@@ -71,8 +71,9 @@ public class MapGenerator : MonoBehaviour
             for (var x = 0; x < mapChunkSize; x++)
             {
                 var curMapHeight = noiseMap[x, y];
-                foreach (var region in regions)
+                for (var index = 0; index < regions.Count; index++)
                 {
+                    var region = regions[index];
                     if (!(curMapHeight <= region.height)) continue;
                     colorMap[y * mapChunkSize + x] = region.colour;
                     break;

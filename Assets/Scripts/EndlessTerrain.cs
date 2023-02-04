@@ -75,7 +75,7 @@ public class EndlessTerrain : MonoBehaviour
         public TerrainChunk(Vector2 coord, int size, Transform parent)
         {
             var et = GameObject.FindWithTag("MapGen").GetComponent<EndlessTerrain>();
-            
+
             _pos = coord * size;
             _bounds = new Bounds(_pos, Vector2.one * size);
             var pos3 = new Vector3(_pos.x, 0, _pos.y);
@@ -85,12 +85,15 @@ public class EndlessTerrain : MonoBehaviour
             _mapGen.offset = _pos * et._offsetMult;
             _mapGen.offset = new Vector2(_mapGen.offset.x, -_mapGen.offset.y);
 
-            if (_mapGen.drawMode == MapGenerator.DrawMode.Mesh){
+            if (_mapGen.drawMode == MapGenerator.DrawMode.Mesh)
+            {
                 var md = _mapGen.GenerateMapData();
-                p.GetComponent<MeshFilter>().mesh = MeshGenerator.GenerateTerrainMesh(md.heightMap,
+                var t = TextureGenerator.TextureFromColourMap(md.colorMap, _mapGen.mapChunkSize, _mapGen.mapChunkSize);
+                var m = MeshGenerator.GenerateTerrainMesh(md.heightMap,
                     _mapGen.meshHeightMultiplier, _mapGen.meshHeightCurve, _mapGen.levelOfDetail).CreateMesh();
-                p.GetComponent<MeshRenderer>().material.mainTexture =
-                    TextureGenerator.TextureFromColourMap(md.colorMap, _mapGen.mapChunkSize, _mapGen.mapChunkSize);
+                p.GetComponent<MeshFilter>().mesh = m;
+                p.GetComponent<MeshCollider>().sharedMesh = m;
+                p.GetComponent<MeshRenderer>().material.mainTexture = t;
             }
 
             _meshObject = p;
