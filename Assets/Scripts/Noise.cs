@@ -55,9 +55,12 @@ public static class Noise
         {
             for (var x = 0; x < mapWidth; x++)
             {
-                noiseMap[x, y] = Mathf.InverseLerp(minNoise, maxNoise, noiseMap[x, y]);
+                noiseMap[x, y] = Mathf.InverseLerp(-1.1f, 1f, noiseMap[x, y]);
             }
         }
+
+        Debug.Log($"Max noise: {maxNoise}");
+        Debug.Log($"Max noise: {minNoise}");
 
         return noiseMap;
     }

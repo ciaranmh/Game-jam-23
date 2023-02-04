@@ -11,7 +11,6 @@ public class EndlessTerrain : MonoBehaviour
     public Transform viewer;
     private static MapGenerator _mapGen;
     public float _offsetMult;
-    private float lasfOffsetMult;
 
     private static Vector2 _viewerPosition;
     private int _chunkSize;
@@ -24,15 +23,20 @@ public class EndlessTerrain : MonoBehaviour
     {
         _mapGen = GetComponent<MapGenerator>();
         _chunkSize = _mapGen.mapChunkSize - 1;
+<<<<<<< Updated upstream
         _chunksVisibleInViewDist = 1; //Mathf.RoundToInt(MaxViewDist / _chunkSize);
         // _offsetMult = 1 / _mapGen.noiseScale;
+=======
+        _chunksVisibleInViewDist = Mathf.RoundToInt(MaxViewDist / _chunkSize);
+        _offsetMult = 1 / _mapGen.noiseScale;
+>>>>>>> Stashed changes
     }
 
     private void Update()
     {
         _viewerPosition = new Vector2(viewer.position.x, viewer.position.z);
         // UpdateVisibleChunks();
-        UpdateVisibleChunksSpecial();
+        UpdateVisibleChunks();
     }
 
     private void UpdateVisibleChunks()
@@ -67,36 +71,6 @@ public class EndlessTerrain : MonoBehaviour
         }
     }
 
-    private void UpdateVisibleChunksSpecial()
-    {
-        if (_offsetMult == lasfOffsetMult) return;
-
-        lasfOffsetMult = _offsetMult;
-
-        var currentChunkX = Mathf.RoundToInt(_viewerPosition.x / _chunkSize);
-        var currentChunkY = Mathf.RoundToInt(_viewerPosition.y / _chunkSize);
-
-        for (var yOffset = -_chunksVisibleInViewDist; yOffset <= _chunksVisibleInViewDist; yOffset++)
-        {
-            for (var xOffset = -_chunksVisibleInViewDist; xOffset <= _chunksVisibleInViewDist; xOffset++)
-            {
-                var viewedChunkCoord = new Vector2(currentChunkX + xOffset, currentChunkY + yOffset);
-
-                if (_terrChunkDict.ContainsKey(viewedChunkCoord))
-                {
-                    Destroy(_terrChunkDict[viewedChunkCoord]._meshObject);
-                    _terrChunkDict[viewedChunkCoord] = new TerrainChunk(viewedChunkCoord, _chunkSize, transform);
-                    _terrChunkDict[viewedChunkCoord].SetVisible(true);
-                }
-                else
-                {
-                    _terrChunkDict[viewedChunkCoord] = new TerrainChunk(viewedChunkCoord, _chunkSize, transform);
-                    _terrChunkDict[viewedChunkCoord].SetVisible(true);
-                }
-            }
-        }
-    }
-
     private class TerrainChunk
     {
         internal readonly GameObject _meshObject;
@@ -112,7 +86,9 @@ public class EndlessTerrain : MonoBehaviour
             var pos3 = new Vector3(_pos.x, 0, _pos.y);
 
             var p = GameObject.CreatePrimitive(PrimitiveType.Plane);
+            p.name = coord.ToString();
             _mapGen.offset = _pos * et._offsetMult;
+            _mapGen.offset = new Vector2(_mapGen.offset.x, -_mapGen.offset.y);
 
             if (_mapGen.drawMode == MapGenerator.DrawMode.Mesh){
                 var md = _mapGen.GenerateMapData();
