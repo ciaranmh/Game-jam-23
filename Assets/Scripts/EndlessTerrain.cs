@@ -23,13 +23,8 @@ public class EndlessTerrain : MonoBehaviour
     {
         _mapGen = GetComponent<MapGenerator>();
         _chunkSize = _mapGen.mapChunkSize - 1;
-<<<<<<< Updated upstream
-        _chunksVisibleInViewDist = 1; //Mathf.RoundToInt(MaxViewDist / _chunkSize);
-        // _offsetMult = 1 / _mapGen.noiseScale;
-=======
         _chunksVisibleInViewDist = Mathf.RoundToInt(MaxViewDist / _chunkSize);
         _offsetMult = 1 / _mapGen.noiseScale;
->>>>>>> Stashed changes
     }
 
     private void Update()
